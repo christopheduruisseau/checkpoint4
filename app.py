@@ -22,6 +22,17 @@ df = pd.read_csv('ultimate_df.csv')
 
 #region figures
 
+def formatMap(fignb):
+    #Define margin for figure layout so the chart can fill as much space as possible
+   #fignb.update_layout(margin=dict(l=0, r=0, t=0, b=0))
+
+    #Define dims for layout
+    fignb.layout.width=900
+    fignb.layout.height=600
+
+    #Set orientation of the modebar 
+    fignb.layout.modebar.orientation='h'
+
 #Create figures 
 
 #Fig 1 : Distribution des pays dans le dataframe
@@ -33,7 +44,7 @@ labels.columns = ['Country',"Nb_occurences"]
 most_represented_countries = labels[labels.Nb_occurences > 200]['Country']
 
 fig1 = px.bar(labels[labels.Nb_occurences > 200].sort_values('Nb_occurences'), x="Nb_occurences", y="Country", orientation='h')
-
+formatMap(fig1)
 # fig1.update_layout(
 #     paper_bgcolor='rgba(255, 255, 255, 0.8)',
 #     plot_bgcolor='rgba(255, 255, 255, 0.8)'
@@ -50,7 +61,7 @@ fig2 = go.Figure(data=[
 ])
 
 fig2.update_layout(barmode="group")
-
+formatMap(fig2)
 
 #Fig 3 : Score et prix moyen selon les dates 
 data_fig3 = df.groupby('millesime').median()[['points','price']].sort_values(by='price').reset_index()
@@ -61,6 +72,25 @@ fig3 = go.Figure(data=[
                 go.Bar(name='Price', y=list(range(len(date_fig3))), x = data_fig3['price'],orientation='h'),    
                 go.Bar(name='Points',y=list(range(len(date_fig3))), x = data_fig3['points'],orientation='h')
 ])
+
+fig3.update_layout(barmode='group',yaxis = dict(
+        tickmode = 'array',
+        tickvals = list(range(len(date_fig3))),
+        ticktext = list(date_fig3),
+        
+    ),
+    margin=dict(t=0.5,b=0.5),
+    legend=dict(
+    orientation="h",
+    yanchor="bottom",
+    y=1.02,
+    xanchor="right",
+    x=1))
+
+   #fignb.update_layout(margin=dict(l=0, r=0, t=0, b=0))
+
+formatMap(fig3)
+fig3.layout.modebar.orientation='v'
 
 
 #Fig 4 : Distribution des prix 
@@ -73,6 +103,9 @@ fig4.update_layout(yaxis = dict(
         ticktext = [np.exp(i) for i in range(2,9)]
     ))
 
+formatMap(fig4)
+
+
 #Fig 5 : Les millesimes les plus représentés 
 data,index = pd.factorize(df.millesime)
 labels = [index[i] for i in data]
@@ -81,6 +114,7 @@ labels.columns = ['millesime',"Nb_occurences"]
 labels = labels[labels.Nb_occurences > 200].sort_values('Nb_occurences',ascending=False)
 fig5 = px.bar(labels, x="Nb_occurences", y="millesime", orientation='h')
 
+formatMap(fig5)
 
 df = pd.read_csv('ultimate_df.csv')
 #Fig 6 : Evolution des points et price moyen par millesime par province 
@@ -91,6 +125,7 @@ for i in columns:
 fig6 = px.line(evolution.reset_index().melt(id_vars=['index']).interpolate(), x="index", y="value", 
 color="variable",line_shape='spline',color_discrete_sequence=px.colors.qualitative.Antique)
 
+formatMap(fig6)
 
 result = pd.read_csv('result.csv')
 features = list(result.columns)
@@ -139,7 +174,8 @@ fig_1 = dbc.Row(align='center',justify='left',
                 )
         ]),
         dbc.Col(children=[
-            html.Div('''On voit ici les plus représentés ''')
+            html.Div('''On voit ici les 15 pays les plus représentés dans le jeux de données. Par 
+            la suite, on conservera uniquement ces pays (95% du dataset).''')
         ])
 
 ]
@@ -159,20 +195,15 @@ fig_2 = dbc.Row(align='center',justify='left',
                 )
         ]),
         dbc.Col(children=[
-            html.Div(''' Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
-            Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an 
-            unknown printer took a galley of type and scrambled it to make a type specimen book. 
-            It has survived not only five centuries, but also the leap into electronic typesetting, 
-            remaining essentially unchanged. It was popularised in the 1960s with the release of
-             Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing 
-             software like Aldus PageMaker including versions of Lorem Ipsum.''')
+            html.Div(''' Au niveau mondial, on voit une évolution des prix en moyenne dans ce jeux de données, mais 
+            l'attribution des points ne semble pas être correlé avec le prix.''')
         ])
 
 ]
 )
 
 title_fig3 = dbc.Row(align='center',justify='left',children=[
-    html.H3('Points et prix moyens par date')
+    html.H3('Points et prix moyens par millesime')
 ])
 
 fig_3 = dbc.Row(align='center',justify='left',
@@ -185,13 +216,8 @@ fig_3 = dbc.Row(align='center',justify='left',
                 )
         ]),
         dbc.Col(children=[
-            html.Div(''' Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
-            Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an 
-            unknown printer took a galley of type and scrambled it to make a type specimen book. 
-            It has survived not only five centuries, but also the leap into electronic typesetting, 
-            remaining essentially unchanged. It was popularised in the 1960s with the release of
-             Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing 
-             software like Aldus PageMaker including versions of Lorem Ipsum.''')
+            html.Div(''' Si l'on observe les mêmes variables en fonction des dates sur les 15 pays les plus représentés, on voit que les prix les plus chers
+            en moyenne sont sur des vins dont le millesime est bien inférieur à 2000.''')
         ])
 
 ]
@@ -211,13 +237,8 @@ fig_4 = dbc.Row(align='center',justify='left',
                 )
         ]),
         dbc.Col(children=[
-            html.Div(''' Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
-            Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an 
-            unknown printer took a galley of type and scrambled it to make a type specimen book. 
-            It has survived not only five centuries, but also the leap into electronic typesetting, 
-            remaining essentially unchanged. It was popularised in the 1960s with the release of
-             Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing 
-             software like Aldus PageMaker including versions of Lorem Ipsum.''')
+            html.Div(''' Ici, on voit bien que l'ensemble des prix est plutôt situé dans des valeurs inférieures à environ 149$. Nous 
+            allons par la suite filter les données avec cette valeur.''')
         ])
 
 ]
@@ -238,13 +259,9 @@ fig_5 = dbc.Row(align='center',justify='left',
                 )
         ]),
         dbc.Col(children=[
-            html.Div(''' Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
-            Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an 
-            unknown printer took a galley of type and scrambled it to make a type specimen book. 
-            It has survived not only five centuries, but also the leap into electronic typesetting, 
-            remaining essentially unchanged. It was popularised in the 1960s with the release of
-             Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing 
-             software like Aldus PageMaker including versions of Lorem Ipsum.''')
+            html.Div(''' De la même manière, on constate que les millesimes les plus représentés dans les données sont 
+            compris dans les années supérieures ou égales à 2000. Nous allons nous intéresser plus particulièrement à
+            ces données ''')
         ])
 
 ]
@@ -252,7 +269,7 @@ fig_5 = dbc.Row(align='center',justify='left',
 
 
 title_fig6 = dbc.Row(align='center',justify='left',children=[
-    html.H3('Evolution des points et du prix par millesime par province')
+    html.H3('Evolution des prix moyen par millesime par province')
 ])
 
 fig_6 = dbc.Row(align='center',justify='left',
@@ -269,15 +286,30 @@ fig_6 = dbc.Row(align='center',justify='left',
 ]
 )
 
-dropdown_fig6 =   html.Div( dcc.Dropdown(
+dropdown_fig6 = html.Div( dcc.Dropdown(
                 id='country',
                 options=[{'label': i, 'value': i} for i in df.country.unique()],
                 value='France'
             ))
 
+dropdown_province =   html.Div( dcc.Dropdown(
+                id='province'
+            ))
+
+
+
 
 title_fig_7 = dbc.Row(align='center',justify='left',children=[
-    html.H3('Préconisation des prix pour le domaine de Croix')
+    html.H3('Préconisation des prix pour le domaine des Croix')
+])
+
+txt_fig_7 = dbc.Row(align='center',justify='left',children=[
+    html.Div('''En tenant compte des informations précédentes, le dataset est filtré par millesime et par 
+    prix, ainsi que par variété, en fonction de celle du vin pour lequel il faut estimer un prix.
+    Ensuite, on effectue une recherche des 10 vins les plus similaires via leurs descriptions respective afin
+    d'affiner une nouvelle fois la recherche. Enfin, on fait une moyenne des prix obtenus sur les 10 vins recherchés
+    et on l'affecte au nouveau vin. Pour aller plus loin, on peut réaliser un modèle avec les features [points',
+    'variety','province'] et aussi avec différents mots les plus représentatifs obtenu durant l'analyse en NLP de la description. ''')
 ])
 
 fig_7 = dbc.Row(align='center',justify='left',
@@ -313,8 +345,10 @@ content = html.Div(
         fig_5,
         title_fig6,
         dropdown_fig6,
+        dropdown_province,
         fig_6,
         title_fig_7,
+        txt_fig_7,
         fig_7
     ],
     style=CONTENT_STYLE
@@ -338,15 +372,38 @@ content
 
 
 @app.callback(
-    Output('fig6','figure'),
+    Output('province','options'),
     [Input('country','value')])
-def update_figure(value):
-    columns = [i for i in df[df['country'] == value].province.unique()]
-    evolution = pd.DataFrame(index=list(range(2000,2022)),columns=columns)
-    for i in columns:
-        evolution[i] = df[(df['country'] == value) & (df['province'] == i)].groupby(by=['millesime']).mean()['price']
-    fig6 = px.line(evolution.reset_index().melt(id_vars=['index']).interpolate(), x="index", y="value", 
-    color="variable",line_shape='spline',color_discrete_sequence=px.colors.qualitative.Antique)
+def update_dropdown(value):
+    return [{'label': i, 'value': i} for i in df[df['country'] == value].province.unique()]
+
+@app.callback(
+    Output('province', 'value'),
+    Input('province', 'options'))
+def set_cities_value(available_options):
+    return available_options[0]['value']
+
+@app.callback(
+    Output('fig6','figure'),
+    Input('country','value'),
+    Input('province','value'))
+def update_figure(select_country,select_province):
+    #columns = [i for i in df[df['country'] == select_country].province.unique()]
+    #evolution = pd.DataFrame(index=list(range(2000,2022)),columns=columns)
+    #for i in columns:
+    evolution = df[(df['country'] == select_country) & (df['province'] == select_province)].groupby(by=['millesime']).mean()['price']
+    #print(evolution)
+    #fig6 = px.line(evolution.reset_index().melt(id_vars=['index']).interpolate(), x="index", y="value", 
+    fig6 = px.line(evolution.reset_index().interpolate(),x='millesime',y='price'
+
+    )
+
+    fig6.update_traces(mode='markers+lines')
+    #fig6 = px.scatter(evolution.reset_index().interpolate(),x='millesime',y='price'
+    # ,line_shape='spline'
+    #)
+    # fig6 = go.Figure()
+    # fig6.add_trace(go.scatter(evolution.reset_index().interpolate(),x='millesime',y='price',mode='lines+markers'))
     return fig6
     
 
